@@ -17,6 +17,8 @@ from colour import Color
 
 from thumbor.engines import BaseEngine
 from thumbor.utils import deprecated
+from pexif import JpegFile
+import math
 
 try:
     from thumbor.ext.filters import _composite
@@ -64,6 +66,7 @@ class Engine(BaseEngine):
         cv.SetData(imagefiledata, buffer, len(buffer))
         img0 = cv.DecodeImageM(imagefiledata, cv.CV_LOAD_IMAGE_UNCHANGED)
 
+        self.exif = JpegFile.fromString(buffer).get_exif().data 
         return img0
 
     @property
@@ -86,6 +89,38 @@ class Engine(BaseEngine):
         cv.Copy(src_region, cropped)
 
         self.image = cropped
+
+    def rotate(self, degrees):
+        degrees = degrees % 360
+
+
+        if (degrees > 180):
+            # Flip around both axes
+            cv.Flip(self.image, None, -1)
+            degrees = degrees - 180;
+
+        img = self.image
+
+        size = cv.GetSize(img)
+        if (degrees / 90 % 2):
+            print degrees
+            print '==============='
+            new_size = (size[1], size[0])
+            p = min(size[0], size[1])
+            center = (p * 0.5, p * 0.5)
+            print center
+            print new_size
+        else:
+            new_size = size
+            center = (size[0] * 0.5, size[1] * 0.5)
+ 
+        mapMatrix = cv.CreateMat(2,3,cv.CV_64F);
+
+        cv.GetRotationMatrix2D(center, degrees, 1.0, mapMatrix)
+        dst = cv.CreateImage(new_size, 8, img.channels)
+        cv.SetZero(dst)
+        cv.WarpAffine(img,dst,mapMatrix)
+        self.image = dst
 
     def flip_vertically(self):
         cv.Flip(self.image, None, 1)
