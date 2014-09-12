@@ -100,22 +100,17 @@ class Engine(BaseEngine):
             degrees = degrees - 180;
 
         img = self.image
-
         size = cv.GetSize(img)
+
         if (degrees / 90 % 2):
-            print degrees
-            print '==============='
             new_size = (size[1], size[0])
-            p = min(size[0], size[1])
+            p = max(size[0], size[1])
             center = (p * 0.5, p * 0.5)
-            print center
-            print new_size
         else:
             new_size = size
             center = (size[0] * 0.5, size[1] * 0.5)
  
         mapMatrix = cv.CreateMat(2,3,cv.CV_64F);
-
         cv.GetRotationMatrix2D(center, degrees, 1.0, mapMatrix)
         dst = cv.CreateImage(new_size, 8, img.channels)
         cv.SetZero(dst)
