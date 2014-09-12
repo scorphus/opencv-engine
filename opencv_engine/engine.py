@@ -66,7 +66,9 @@ class Engine(BaseEngine):
         cv.SetData(imagefiledata, buffer, len(buffer))
         img0 = cv.DecodeImageM(imagefiledata, cv.CV_LOAD_IMAGE_UNCHANGED)
 
-        self.exif = JpegFile.fromString(buffer).get_exif().data 
+        if FORMATS[self.extension] == 'JPEG':
+            self.exif = JpegFile.fromString(buffer).get_exif().data 
+
         return img0
 
     @property
