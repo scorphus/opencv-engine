@@ -104,8 +104,7 @@ class Engine(BaseEngine):
 
         if (degrees / 90 % 2):
             new_size = (size[1], size[0])
-            p = max(size[0], size[1])
-            center = (p * 0.5, p * 0.5)
+            center = (size[0] * 0.5, size[0] * 0.5)
         else:
             new_size = size
             center = (size[0] * 0.5, size[1] * 0.5)
