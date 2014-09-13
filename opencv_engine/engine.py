@@ -67,7 +67,9 @@ class Engine(BaseEngine):
         img0 = cv.DecodeImageM(imagefiledata, cv.CV_LOAD_IMAGE_UNCHANGED)
 
         if FORMATS[self.extension] == 'JPEG':
-            self.exif = JpegFile.fromString(buffer).get_exif().data 
+            info = JpegFile.fromString(buffer).get_exif()
+            if info:
+                self.exif = info.data 
 
         return img0
 
@@ -94,7 +96,6 @@ class Engine(BaseEngine):
 
     def rotate(self, degrees):
         degrees = degrees % 360
-
 
         if (degrees > 180):
             # Flip around both axes
