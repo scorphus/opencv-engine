@@ -108,10 +108,10 @@ class Engine(BaseEngine):
 
         if (degrees / 90 % 2):
             new_size = (size[1], size[0])
-            center = (size[0] * 0.5, size[0] * 0.5)
+            center = ((size[0] - 1) * 0.5, (size[0] - 1) * 0.5)
         else:
             new_size = size
-            center = (size[0] * 0.5, size[1] * 0.5)
+            center = ((size[0] - 1) * 0.5, (size[1] - 1) * 0.5)
  
         mapMatrix = cv.CreateMat(2, 3, cv.CV_64F)
         cv.GetRotationMatrix2D(center, degrees, 1.0, mapMatrix)
