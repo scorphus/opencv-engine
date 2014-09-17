@@ -17,7 +17,7 @@ from colour import Color
 
 from thumbor.engines import BaseEngine
 from thumbor.utils import deprecated
-from pexif import JpegFile
+from pexif import JpegFile, ExifSegment
 import math
 
 try:
@@ -70,6 +70,7 @@ class Engine(BaseEngine):
             info = JpegFile.fromString(buffer).get_exif()
             if info:
                 self.exif = info.data 
+                self.exif_marker = info.marker
 
         return img0
 
@@ -100,7 +101,7 @@ class Engine(BaseEngine):
         if (degrees > 180):
             # Flip around both axes
             cv.Flip(self.image, None, -1)
-            degrees = degrees - 180;
+            degrees = degrees - 180
 
         img = self.image
         size = cv.GetSize(img)
@@ -112,11 +113,11 @@ class Engine(BaseEngine):
             new_size = size
             center = (size[0] * 0.5, size[1] * 0.5)
  
-        mapMatrix = cv.CreateMat(2,3,cv.CV_64F);
+        mapMatrix = cv.CreateMat(2, 3, cv.CV_64F)
         cv.GetRotationMatrix2D(center, degrees, 1.0, mapMatrix)
         dst = cv.CreateImage(new_size, 8, img.channels)
         cv.SetZero(dst)
-        cv.WarpAffine(img,dst,mapMatrix)
+        cv.WarpAffine(img, dst, mapMatrix)
         self.image = dst
 
     def flip_vertically(self):
@@ -138,7 +139,15 @@ class Engine(BaseEngine):
             #default is JPEG so
             options = [cv.CV_IMWRITE_JPEG_QUALITY, quality]
 
-        return cv.EncodeImage(extension, self.image, options or []).tostring()
+        data = cv.EncodeImage(extension, self.image, options or []).tostring()
+
+        if self.context.config.PRESERVE_EXIF_INFO:
+            if self.exif is not None: 
+                img = JpegFile.fromString(data)
+                img._segments.insert(0, ExifSegment(self.exif_marker, None, self.exif, 'rw'))
+                data = img.writeString() 
+
+        return  data
 
     def set_image_data(self, data):
         cv.SetData(self.image, data)
